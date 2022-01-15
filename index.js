@@ -9,12 +9,11 @@ var fs = require('fs'),
 	http = require('http'),
 	send = require('send'),
 	open = require('opn'),
-	es = require("event-stream"),
 	os = require('os'),
 	chokidar = require('chokidar');
 require('colors');
 
-var INJECTED_CODE = fs.readFileSync(path.join(__dirname, "injected.html"), "utf8");
+var HTML_INJECTION_TEMPLATE = fs.readFileSync(path.join(__dirname, "injected.html"), "utf8");
 
 var LiveServer = {
 	server: null,
@@ -44,6 +43,7 @@ function staticServer(root) {
 		var hasNoOrigin = !req.headers.origin;
 		var injectCandidates = [ new RegExp("</body>", "i"), new RegExp("</svg>"), new RegExp("</head>", "i")];
 		var injectTag = null;
+		var contents;
 
 		function directory() {
 			var pathname = url.parse(req.originalUrl).pathname;
@@ -57,7 +57,7 @@ function staticServer(root) {
 					possibleExtensions = [ "", ".html", ".htm", ".xhtml", ".php", ".svg" ];
 			if (hasNoOrigin && (possibleExtensions.indexOf(x) > -1)) {
 				// TODO: Sync file read here is not nice, but we need to determine if the html should be injected or not
-				var contents = fs.readFileSync(filepath, "utf8");
+				contents = fs.readFileSync(filepath, "utf8");
 				for (var i = 0; i < injectCandidates.length; ++i) {
 					match = injectCandidates[i].exec(contents);
 					if (match) {
@@ -79,13 +79,42 @@ function staticServer(root) {
 
 		function inject(stream) {
 			if (injectTag) {
+				var nonce = require('crypto').randomBytes(16).toString('hex');
+				// 'none' becomes meaningless and gives a warning if it's not the only value.
+				var cspInjectCandidates = [
+					/(script-src-elem)\s+('none')?\s*/i,
+					/(script-src)\s+('none')?\s*/i,
+					/(default-src)\s+('none')?\s*/i
+				];
+				
+				// Inject the script tag
+				var toInject = HTML_INJECTION_TEMPLATE.replace(/<script/i, `<script nonce="${nonce}"`);
+				// @TODO: no point in constructing regexp
+				// 1. could store the regexp instead of injectTag, or
+				// 2. we could do a string replace with injectTag, as it's already the specific letter case.
+				content = contents.replace(new RegExp(injectTag, "i"), toInject + injectTag);
+
+				// Inject the nonce into the CSP
+				// (If no CSP is present, it won't cause problems; we're not serving CSP headers after all)
+				for (var i = 0; i < cspInjectCandidates.length; ++i) {
+					var match = cspInjectCandidates[i].exec(content);
+					if (match) {
+						content = content.replace(match[0], match[1] + " 'nonce-" + nonce + "' ");
+						break;
+					}
+				}
+				
 				// We need to modify the length given to browser
-				var len = INJECTED_CODE.length + res.getHeader('Content-Length');
+				var len = Buffer.byteLength(content, 'utf8');
 				res.setHeader('Content-Length', len);
-				var originalPipe = stream.pipe;
-				stream.pipe = function(resp) {
-					originalPipe.call(stream, es.replace(new RegExp(injectTag, "i"), INJECTED_CODE + injectTag)).pipe(resp);
+
+				// Send the modified content (hacky)
+				// var originalPipe = stream.pipe;
+				stream.pipe = function (resp) {
+					// var contentStream = stream from string(content);
+					// originalPipe.call(stream, contentStream).pipe(resp);
 				};
+				res.end(content);
 			}
 		}
 
@@ -209,7 +238,7 @@ LiveServer.start = function(options) {
 	}
 	mount.forEach(function(mountRule) {
 		var mountPath = path.resolve(process.cwd(), mountRule[1]);
-		if (!options.watch) // Auto add mount paths to wathing but only if exclusive path option is not given
+		if (!options.watch) // Auto add mount paths to watching but only if exclusive path option is not given
 			watchPaths.push(mountPath);
 		app.use(mountRule[0], staticServer(mountPath));
 		if (LiveServer.logLevel >= 1)
