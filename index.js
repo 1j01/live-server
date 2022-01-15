@@ -43,7 +43,7 @@ function staticServer(root) {
 		var hasNoOrigin = !req.headers.origin;
 		var injectCandidates = [ new RegExp("</body>", "i"), new RegExp("</svg>"), new RegExp("</head>", "i")];
 		var injectTag = null;
-		var contents;
+		var content;
 
 		function directory() {
 			var pathname = url.parse(req.originalUrl).pathname;
@@ -58,9 +58,9 @@ function staticServer(root) {
 			if (hasNoOrigin && (possibleExtensions.indexOf(x) > -1)) {
 				// TODO: Sync file read here is not nice, but we need to determine if the html should be injected or not
 				// and it's useful to have the file contents in memory for CSP handling
-				contents = fs.readFileSync(filepath, "utf8");
+				content = fs.readFileSync(filepath, "utf8");
 				for (var i = 0; i < injectCandidates.length; ++i) {
-					match = injectCandidates[i].exec(contents);
+					match = injectCandidates[i].exec(content);
 					if (match) {
 						injectTag = match[0];
 						break;
@@ -94,7 +94,7 @@ function staticServer(root) {
 				// @TODO: no point in constructing regexp
 				// 1. could store the regexp instead of injectTag, or
 				// 2. we could do a string replace with injectTag, as it's already the specific letter case.
-				content = contents.replace(new RegExp(injectTag, "i"), toInject + injectTag);
+				content = content.replace(new RegExp(injectTag, "i"), toInject + injectTag);
 
 				// Inject connect-src into the CSP for web sockets
 				// Add connect-src if it doesn't exist.
@@ -130,7 +130,7 @@ function staticServer(root) {
 				// Send the modified content (hacky)
 				// var originalPipe = stream.pipe;
 				stream.pipe = function (/*resp*/) {
-					// var contentStream = stream from string(content);
+					// var contentStream = stream from string(contents);
 					// originalPipe.call(stream, contentStream).pipe(resp);
 				};
 				res.end(content);
