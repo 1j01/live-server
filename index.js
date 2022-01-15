@@ -57,6 +57,7 @@ function staticServer(root) {
 					possibleExtensions = [ "", ".html", ".htm", ".xhtml", ".php", ".svg" ];
 			if (hasNoOrigin && (possibleExtensions.indexOf(x) > -1)) {
 				// TODO: Sync file read here is not nice, but we need to determine if the html should be injected or not
+				// and it's useful to have the file contents in memory for CSP handling
 				contents = fs.readFileSync(filepath, "utf8");
 				for (var i = 0; i < injectCandidates.length; ++i) {
 					match = injectCandidates[i].exec(contents);
@@ -81,9 +82,13 @@ function staticServer(root) {
 			if (injectTag) {
 				var nonce = require('crypto').randomBytes(16).toString('hex');
 				// 'none' becomes meaningless and gives a warning if it's not the only value.
-				var cspInjectCandidates = [
+				var cspNonceInjectCandidates = [
 					/(script-src-elem)\s+('none')?\s*/i,
 					/(script-src)\s+('none')?\s*/i,
+					/(default-src)\s+('none')?\s*/i
+				];
+				var cspConnectInjectCandidates = [
+					/(connect-src)\s+('none')?\s*/i,
 					/(default-src)\s+('none')?\s*/i
 				];
 				
@@ -96,10 +101,27 @@ function staticServer(root) {
 
 				// Inject the nonce into the CSP
 				// (If no CSP is present, it won't cause problems; we're not serving CSP headers after all)
-				for (var i = 0; i < cspInjectCandidates.length; ++i) {
-					var match = cspInjectCandidates[i].exec(content);
+				for (var i = 0; i < cspNonceInjectCandidates.length; ++i) {
+					var match = cspNonceInjectCandidates[i].exec(content);
 					if (match) {
 						content = content.replace(match[0], match[1] + " 'nonce-" + nonce + "' ");
+						break;
+					}
+				}
+				// Inject connect-src into the CSP for web sockets
+				// @TODO: add connect-src if it doesn't exist, don't just add to default-src
+				for (var i = 0; i < cspConnectInjectCandidates.length; ++i) {
+					var match = cspConnectInjectCandidates[i].exec(content);
+					if (match) {
+						// var address = req.connection.remoteAddress;
+						// var port = req.connection.remotePort;
+						var wsProtocol = req.connection.encrypted ? "wss" : "ws";
+						// var wsAddress = wsProtocol + "://" + address + ":" + port;
+						// web sockets upgrade from HTTP
+						var httpProtocol = req.connection.encrypted ? "https" : "http";
+						// var httpAddress = httpProtocol + "://" + address + ":" + port;
+						// content = content.replace(match[0], match[1] + " " + wsAddress + " " + httpAddress + " ");
+						content = content.replace(match[0], match[1] + " " + wsProtocol + ": " + httpProtocol + ": ");
 						break;
 					}
 				}
