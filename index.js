@@ -87,10 +87,6 @@ function staticServer(root) {
 					/(script-src)\s+('none')?\s*/i,
 					/(default-src)\s+('none')?\s*/i
 				];
-				var cspConnectInjectCandidates = [
-					/(connect-src)\s+('none')?\s*/i,
-					/(default-src)\s+('none')?\s*/i
-				];
 				
 				// Inject the script tag
 				var toInject = HTML_INJECTION_TEMPLATE.replace(/<script/i, `<script nonce="${nonce}"`);
@@ -109,23 +105,18 @@ function staticServer(root) {
 					}
 				}
 				// Inject connect-src into the CSP for web sockets
-				// @TODO: add connect-src if it doesn't exist, don't just add to default-src
-				for (var i = 0; i < cspConnectInjectCandidates.length; ++i) {
-					var match = cspConnectInjectCandidates[i].exec(content);
-					if (match) {
-						// var address = req.connection.remoteAddress;
-						// var port = req.connection.remotePort;
-						var wsProtocol = req.connection.encrypted ? "wss" : "ws";
-						// var wsAddress = wsProtocol + "://" + address + ":" + port;
-						// web sockets upgrade from HTTP
-						var httpProtocol = req.connection.encrypted ? "https" : "http";
-						// var httpAddress = httpProtocol + "://" + address + ":" + port;
-						// content = content.replace(match[0], match[1] + " " + wsAddress + " " + httpAddress + " ");
-						content = content.replace(match[0], match[1] + " " + wsProtocol + ": " + httpProtocol + ": ");
-						break;
-					}
+				// Add connect-src if it doesn't exist.
+				// default-src would not be appropriate, as we need to allow http:// for websocket upgrades
+				var match = /(connect-src)\s+('none')?\s*/i.exec(content);
+				if (match) {
+					content = content.replace(match[0], match[1] + " ws: ");
+				} else {
+					// including default-src inside connect-src so it doesn't restrict it more than you've restricted it,
+					// only allowing ws://, wss://, http://, and https://
+					// TODO: handle 'none' case
+					content = content.replace(/(default-src)\s+([^;"]+)([;"])/i, "$1 $2; connect-src $2 ws: wss: http: https: $3");
 				}
-				
+
 				// We need to modify the length given to browser
 				var len = Buffer.byteLength(content, 'utf8');
 				res.setHeader('Content-Length', len);
