@@ -95,15 +95,6 @@ function staticServer(root) {
 				// 2. we could do a string replace with injectTag, as it's already the specific letter case.
 				content = contents.replace(new RegExp(injectTag, "i"), toInject + injectTag);
 
-				// Inject the nonce into the CSP
-				// (If no CSP is present, it won't cause problems; we're not serving CSP headers after all)
-				for (var i = 0; i < cspNonceInjectCandidates.length; ++i) {
-					var match = cspNonceInjectCandidates[i].exec(content);
-					if (match) {
-						content = content.replace(match[0], match[1] + " 'nonce-" + nonce + "' ");
-						break;
-					}
-				}
 				// Inject connect-src into the CSP for web sockets
 				// Add connect-src if it doesn't exist.
 				// default-src would not be appropriate, as we need to allow http:// for websocket upgrades
@@ -111,10 +102,21 @@ function staticServer(root) {
 				if (connectSrcMatch) {
 					content = content.replace(connectSrcMatch[0], connectSrcMatch[1] + " ws: ");
 				} else {
-					// including default-src inside connect-src so it doesn't restrict it more than you've restricted it,
-					// only allowing ws://, wss://, http://, and https://
+					// connect-src should inherit from default-src so that it doesn't restrict it more than you've restricted it,
+					// so I'm copying default-src into connect-src.
+					// I'm doing this BEFORE potentially modifying default-src below (otherwise would need to store the original default-src)
 					// TODO: handle 'none' case
 					content = content.replace(/(default-src)\s+([^;"]+)([;"])/i, "$1 $2; connect-src $2 ws: wss: http: https: $3");
+				}
+
+				// Inject the nonce into the CSP for the injected script
+				// (If no CSP meta tag is present, it won't cause problems; we're not serving CSP headers, so no CSP will apply and the script should run.)
+				for (var i = 0; i < cspNonceInjectCandidates.length; ++i) {
+					var match = cspNonceInjectCandidates[i].exec(content);
+					if (match) {
+						content = content.replace(match[0], match[1] + " 'nonce-" + nonce + "' ");
+						break;
+					}
 				}
 
 				// We need to modify the length given to browser
