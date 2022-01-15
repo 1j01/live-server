@@ -87,6 +87,7 @@ function staticServer(root) {
 					/(script-src)\s+('none')?\s*/i,
 					/(default-src)\s+('none')?\s*/i
 				];
+				var originalDefaultSrcMatch = /default-src\s+([^;"]+)/i.exec(content);
 				
 				// Inject the script tag
 				var toInject = HTML_INJECTION_TEMPLATE.replace(/<script/i, "<script nonce=\"" + nonce +"\"");
@@ -104,9 +105,11 @@ function staticServer(root) {
 				} else {
 					// connect-src should inherit from default-src so that it doesn't restrict it more than you've restricted it,
 					// so I'm copying default-src into connect-src.
-					// I'm doing this BEFORE potentially modifying default-src below (otherwise would need to store the original default-src)
-					// TODO: handle 'none' case
-					content = content.replace(/(default-src)\s+([^;"]+)([;"])/i, "$1 $2; connect-src $2 ws: wss: http: https: $3");
+					var toInherit = originalDefaultSrcMatch ? originalDefaultSrcMatch[1] : "";
+					if (toInherit.match(/^\s*'none'\s*$/i)) {
+						toInherit = "";
+					}
+					content = content.replace(originalDefaultSrcMatch[0], originalDefaultSrcMatch[0] + "; connect-src ws: wss: http: https: " + toInherit);
 				}
 
 				// Inject the nonce into the CSP for the injected script
