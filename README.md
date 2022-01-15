@@ -1,9 +1,36 @@
-[![view on npm](http://img.shields.io/npm/v/live-server.svg)](https://www.npmjs.org/package/live-server)
-[![npm module downloads per month](http://img.shields.io/npm/dm/live-server.svg)](https://www.npmjs.org/package/live-server)
-[![build status](https://travis-ci.org/tapio/live-server.svg)](https://travis-ci.org/tapio/live-server)
+[![view on npm](http://img.shields.io/npm/v/@1j01/live-server.svg)](https://www.npmjs.org/package/@1j01/live-server)
+[![npm module downloads per month](http://img.shields.io/npm/dm/@1j01/live-server.svg)](https://www.npmjs.org/package/@1j01/live-server)
+[![build status](https://travis-ci.org/1j01/live-server.svg)](https://travis-ci.org/1j01/live-server)
 
-Live Server
-===========
+Live Server: CSP Fork
+=====================
+
+Fork Changes
+------------
+
+This fork adds support for Content Security Policy (CSP).
+
+If the Content-Security-Policy header is set in a `<meta>` tag, the server will modify it to allow loading the script that live-server injects, as well as the web socket connection it uses for stylesheet updates.
+
+Example:
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'">
+```
+becomes:
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'nonce-45007e5d72d57345349187cf1491412f' ; connect-src 'nonce-45007e5d72d57345349187cf1491412f'  ws: wss: http: https: ; style-src 'self'">
+```
+
+It's not perfect, there's plenty of edge cases to consider, but I tried to make it leave your CSP reasonably in tact.
+
+It adds a nonce for the script tag, to `script-src-elem` if it exists, otherwise `script-src`, or `default-src` if neither exist.
+(If `default-src` doesn't exist either, it doesn't need to be added.)
+
+(The nonce is not needed in the `connect-src` directive, but it's currently copied from the `default-src` directive after changing it. I made it inherit in order to not confusingly restrict the `connect-src` directive. It should only extend what's allowed.)
+
+
+Package Description
+-------------------
 
 This is a little development server with live reload capability. Use it for hacking your HTML/JavaScript/CSS files, but not for deploying the final site.
 
@@ -24,11 +51,11 @@ You need node.js and npm. You should probably install this globally.
 
 **Npm way**
 
-	npm install -g live-server
+	npm install -g @1j01/live-server
 
 **Manual way**
 
-	git clone https://github.com/tapio/live-server
+	git clone https://github.com/1j01/live-server
 	cd live-server
 	npm install # Local dependencies if you want to hack
 	npm install -g # Install globally
@@ -76,7 +103,7 @@ Usage from node
 ---------------
 
 ```javascript
-var liveServer = require("live-server");
+var liveServer = require("@1j01/live-server");
 
 var params = {
 	port: 8181, // Set the server port. Defaults to 8080.
@@ -130,7 +157,7 @@ Troubleshooting
 ---------------
 
 * No reload on changes
-	* Open your browser's console: there should be a message at the top stating that live reload is enabled. Note that you will need a browser that supports WebSockets. If there are errors, deal with them. If it's still not working, [file an issue](https://github.com/tapio/live-server/issues).
+	* Open your browser's console: there should be a message at the top stating that live reload is enabled. Note that you will need a browser that supports WebSockets. If there are errors, deal with them. If it's still not working, [file an issue](https://github.com/1j01/live-server/issues).
 * Error: watch <PATH> ENOSPC
 	* See [this suggested solution](http://stackoverflow.com/questions/22475849/node-js-error-enospc/32600959#32600959).
 * Reload works but changes are missing or outdated

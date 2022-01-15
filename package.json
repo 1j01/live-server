@@ -1,5 +1,5 @@
 {
-  "name": "live-server",
+  "name": "@1j01/live-server",
   "version": "1.2.1",
   "description": "simple development http server with live reload capability",
   "keywords": [
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tapio/live-server.git"
+    "url": "https://github.com/1j01/live-server.git"
   },
   "engines": {
     "node": ">=0.10.0"

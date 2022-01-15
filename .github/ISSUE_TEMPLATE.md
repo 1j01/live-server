@@ -1,4 +1,4 @@
-###### Before submitting an issue, please, see https://github.com/tapio/live-server#troubleshooting
+###### Before submitting an issue, please, see https://github.com/1j01/live-server#troubleshooting
 
 ## Issue description
 
