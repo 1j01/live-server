@@ -40,6 +40,12 @@
   "bin": {
     "live-server": "./live-server.js"
   },
+  "files": [
+    "live-server.js",
+    "index.js",
+    "injected.html",
+    "middleware/"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/1j01/live-server.git"
