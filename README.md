@@ -178,6 +178,11 @@ We welcome contributions! See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for det
 Version history
 ---------------
 
+* v1.3.1
+	- Fixed inheriting `default-src 'none'` for `connect-src` in CSP (it should drop `'none'`, to avoid a warning) (@1j01)
+	- Fixed redundant `nonce` in `connect-src` inherited from modified `default-src` (it now inherits the original `default-src`) (@1j01)
+	- Fixed missing protocols in case that `connect-src` is defined (@1j01)
+	- Limited published files to `live-server.js`, `index.js`, `injected.html`, and `middleware/` (@1j01)
 * v1.3.0
 	- Added Content-Security-Policy support (@1j01)
 * v1.2.1

@@ -1,14 +1,16 @@
 {
   "name": "@1j01/live-server",
-  "version": "1.3.0",
-  "description": "simple development http server with live reload capability",
+  "version": "1.3.1",
+  "description": "live-server fork that adds Content-Security-Policy (CSP) support (a simple development http server with live reload capability)",
   "keywords": [
     "front-end",
     "development",
     "tool",
     "server",
     "http",
-    "cli"
+    "cli",
+    "csp",
+    "content-security-policy"
   ],
   "author": "Tapio Vierros",
   "dependencies": {
