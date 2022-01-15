@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+	<!-- CSP is not required for live-server usage, but live-server modifies CSP to make the injected script work if present. -->
+	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'">
 	<title>Live-server Test Page</title>
 	<link rel="stylesheet" href="style.css" />
 </head>
