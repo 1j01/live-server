@@ -103,14 +103,17 @@ function staticServer(root) {
 				var connectSrcExtension = " ws: wss: http: https: ";
 				if (connectSrcMatch) {
 					content = content.replace(connectSrcMatch[0], connectSrcMatch[1] + connectSrcExtension);
-				} else {
+				} else if (originalDefaultSrcMatch) {
 					// connect-src should inherit from default-src so that it doesn't restrict it more than you've restricted it,
 					// so I'm copying default-src into connect-src.
-					var toInherit = originalDefaultSrcMatch ? originalDefaultSrcMatch[1] : "";
+					var toInherit = originalDefaultSrcMatch[1];
 					if (toInherit.match(/^\s*'none'\s*$/i)) {
-						toInherit = "";
+						toInherit = ""; // Don't inherit 'none' as it would be meaningless, and cause a warning.
 					}
 					content = content.replace(originalDefaultSrcMatch[0], originalDefaultSrcMatch[0] + "; connect-src" + connectSrcExtension + toInherit);
+				} else {
+					// If there's no connect-src or default-src,
+					// we don't need to do anything. It will theoretically be allowed.
 				}
 
 				// Inject the nonce into the CSP for the injected script
