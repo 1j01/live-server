@@ -18,15 +18,15 @@ Example:
 ```
 becomes:
 ```html
-<meta http-equiv="Content-Security-Policy" content="default-src 'nonce-45007e5d72d57345349187cf1491412f' ; connect-src 'nonce-45007e5d72d57345349187cf1491412f'  ws: wss: http: https: ; style-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'nonce-53c70de06ed2ca9452aa092bdfd6d0fc' ; connect-src ws: wss: http: https: ; style-src 'self'">
 ```
 
 It's not perfect, there's plenty of edge cases to consider, but I tried to make it leave your CSP reasonably in tact.
 
-It adds a nonce for the script tag, to `script-src-elem` if it exists, otherwise `script-src`, or `default-src` if neither exist.
-(If `default-src` doesn't exist either, it doesn't need to be added.)
+It adds a nonce for the injected script tag, to `script-src-elem` directive if it exists, otherwise `script-src`, or `default-src` if neither exist.
+(If all three do not exist, it doesn't need to be added, but the CSP is insecure, allowing arbitrary inline scripts.)
 
-(The nonce is not needed in the `connect-src` directive, but it's currently copied from the `default-src` directive after changing it. I made it inherit in order to not confusingly restrict the `connect-src` directive. It should only extend what's allowed.)
+If the `connect-src` directive has to be added, it inherits from `default-src` so that it won't confusingly restrict the `connect-src`. It should only extend what's allowed.
 
 
 Package Description
