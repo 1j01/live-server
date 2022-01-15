@@ -89,7 +89,7 @@ function staticServer(root) {
 				];
 				
 				// Inject the script tag
-				var toInject = HTML_INJECTION_TEMPLATE.replace(/<script/i, `<script nonce="${nonce}"`);
+				var toInject = HTML_INJECTION_TEMPLATE.replace(/<script/i, "<script nonce=\"" + nonce +"\"");
 				// @TODO: no point in constructing regexp
 				// 1. could store the regexp instead of injectTag, or
 				// 2. we could do a string replace with injectTag, as it's already the specific letter case.
@@ -107,9 +107,9 @@ function staticServer(root) {
 				// Inject connect-src into the CSP for web sockets
 				// Add connect-src if it doesn't exist.
 				// default-src would not be appropriate, as we need to allow http:// for websocket upgrades
-				var match = /(connect-src)\s+('none')?\s*/i.exec(content);
-				if (match) {
-					content = content.replace(match[0], match[1] + " ws: ");
+				var connectSrcMatch = /(connect-src)\s+('none')?\s*/i.exec(content);
+				if (connectSrcMatch) {
+					content = content.replace(connectSrcMatch[0], connectSrcMatch[1] + " ws: ");
 				} else {
 					// including default-src inside connect-src so it doesn't restrict it more than you've restricted it,
 					// only allowing ws://, wss://, http://, and https://
@@ -123,7 +123,7 @@ function staticServer(root) {
 
 				// Send the modified content (hacky)
 				// var originalPipe = stream.pipe;
-				stream.pipe = function (resp) {
+				stream.pipe = function (/*resp*/) {
 					// var contentStream = stream from string(content);
 					// originalPipe.call(stream, contentStream).pipe(resp);
 				};
