@@ -178,6 +178,8 @@ We welcome contributions! See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for det
 Version history
 ---------------
 
+* v1.3.0
+	- Added Content-Security-Policy support (@1j01)
 * v1.2.1
 	- `--https-module=MODULE_NAME` to specify custom HTTPS module (e.g. `spdy`) (@pavel)
 	- `--no-css-inject` to reload page on css change instead of injecting the changes (@kylecordes)
