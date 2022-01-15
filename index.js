@@ -100,8 +100,9 @@ function staticServer(root) {
 				// Add connect-src if it doesn't exist.
 				// default-src would not be appropriate, as we need to allow http:// for websocket upgrades
 				var connectSrcMatch = /(connect-src)\s+('none')?\s*/i.exec(content);
+				var connectSrcExtension = " ws: wss: http: https: ";
 				if (connectSrcMatch) {
-					content = content.replace(connectSrcMatch[0], connectSrcMatch[1] + " ws: ");
+					content = content.replace(connectSrcMatch[0], connectSrcMatch[1] + connectSrcExtension);
 				} else {
 					// connect-src should inherit from default-src so that it doesn't restrict it more than you've restricted it,
 					// so I'm copying default-src into connect-src.
@@ -109,7 +110,7 @@ function staticServer(root) {
 					if (toInherit.match(/^\s*'none'\s*$/i)) {
 						toInherit = "";
 					}
-					content = content.replace(originalDefaultSrcMatch[0], originalDefaultSrcMatch[0] + "; connect-src ws: wss: http: https: " + toInherit);
+					content = content.replace(originalDefaultSrcMatch[0], originalDefaultSrcMatch[0] + "; connect-src" + connectSrcExtension + toInherit);
 				}
 
 				// Inject the nonce into the CSP for the injected script
