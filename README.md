@@ -79,7 +79,7 @@ Command line parameters:
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--watch=PATH` - comma-separated string of paths to exclusively watch for changes (default: watch everything)
 * `--ignore=PATH` - comma-separated string of paths to ignore ([anymatch](https://github.com/es128/anymatch)-compatible definition)
-* `--ignorePattern=RGXP` - Regular expression of files to ignore (ie `.*\.jade`) (**DEPRECATED** in favor of `--ignore`)
+* `--ignorePattern=REGEXP` - Regular expression of files to ignore (ie `.*\.jade`) (**DEPRECATED** in favor of `--ignore`)
 * `--no-css-inject` - reload page on CSS change, rather than injecting changed CSS
 * `--middleware=PATH` - path to .js file exporting a middleware function to add; can be a name without path nor extension to reference bundled middlewares in `middleware` folder
 * `--entry-file=PATH` - serve this file (server root relative) in place of missing files (useful for single page apps)
@@ -216,7 +216,7 @@ Version history
 	- `--quiet` now silences warning about injection failure
 	- Giving explicit `--watch` paths now disables adding mounted paths to watching
 * v0.9.1
-	- `--ignorePattern=RGXP` exclude files from watching by regexp (@psi-4ward)
+	- `--ignorePattern=REGEXP` exclude files from watching by regexp (@psi-4ward)
 	- `--watch=PATH` cli option to only watch given paths
 * v0.9.0
 	- `--mount=ROUTE:PATH` cli option to specify alternative routes to paths (@pmentz)
@@ -242,7 +242,7 @@ Version history
 	- Fix Chrome sometimes not applying CSS changes (@harrytruong)
 	- `--ignore=PATH` cli option to not watch given server root relative paths (@richardgoater)
 	- `--entry-file=PATH` cli option to specify file to use when request is not found (@izeau)
-	- `--wait=MSECS` cli option to wait specified time before reloading (@leolower, @harrytruong)
+	- `--wait=MILLISECONDS` cli option to wait specified time before reloading (@leolower, @harrytruong)
 * v0.7.1
 	- Fix hang caused by trying to inject into fragment html files without `</body>`
 	- `logLevel` parameter in library to control amount of console spam

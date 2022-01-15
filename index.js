@@ -39,7 +39,7 @@ function staticServer(root) {
 	}
 	return function(req, res, next) {
 		if (req.method !== "GET" && req.method !== "HEAD") return next();
-		var reqpath = isFile ? "" : url.parse(req.url).pathname;
+		var reqPath = isFile ? "" : url.parse(req.url).pathname;
 		var hasNoOrigin = !req.headers.origin;
 		var injectCandidates = [ new RegExp("</body>", "i"), new RegExp("</svg>"), new RegExp("</head>", "i")];
 		var injectTag = null;
@@ -137,7 +137,7 @@ function staticServer(root) {
 			}
 		}
 
-		send(req, reqpath, { root: root })
+		send(req, reqPath, { root: root })
 			.on('error', error)
 			.on('directory', directory)
 			.on('file', file)
@@ -368,13 +368,13 @@ LiveServer.start = function(options) {
 
 		if (wait > 0) {
 			(function() {
-				var wssend = ws.send;
+				var wsSend = ws.send;
 				var waitTimeout;
 				ws.send = function() {
 					var args = arguments;
 					if (waitTimeout) clearTimeout(waitTimeout);
 					waitTimeout = setTimeout(function(){
-						wssend.apply(ws, args);
+						wsSend.apply(ws, args);
 					}, wait);
 				};
 			})();
@@ -390,7 +390,7 @@ LiveServer.start = function(options) {
 	});
 
 	var ignored = [
-		function(testPath) { // Always ignore dotfiles (important e.g. because editor hidden temp files)
+		function(testPath) { // Always ignore dotfiles (important e.g. because of editor hidden temp files)
 			return testPath !== "." && /(^[.#]|(?:__|~)$)/.test(path.basename(testPath));
 		}
 	];
@@ -414,7 +414,7 @@ LiveServer.start = function(options) {
 		}
 		clients.forEach(function(ws) {
 			if (ws)
-				ws.send(cssChange ? 'refreshcss' : 'reload');
+				ws.send(cssChange ? 'refresh-css' : 'reload');
 		});
 	}
 	LiveServer.watcher

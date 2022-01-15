@@ -22,7 +22,7 @@
 			var socket = new WebSocket(address);
 			socket.onmessage = function(msg) {
 				if (msg.data == 'reload') window.location.reload();
-				else if (msg.data == 'refreshcss') refreshCSS();
+				else if (msg.data == 'refresh-css') refreshCSS();
 			};
 			console.log('Live reload enabled.');
 		})();
